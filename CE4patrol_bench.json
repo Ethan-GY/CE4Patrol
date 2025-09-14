@@ -1,0 +1,68 @@
+[
+  {
+    "scene_id": "E01",
+    "description": "服务器机房电箱夜间应黄灯闪烁，但当前为绿灯常亮",
+    "current_img": "images/E01_current.jpg",
+    "ref_img": "images/E01_ref.jpg",
+    "rule_text": "安全守则第5条：所有服务器机房设备在夜间（22:00–06:00）必须保持黄色指示灯闪烁状态。绿色常亮表示系统异常或误操作。",
+    "action_plan": [
+      "触发中控警报并启动录像",
+      "锁定该机柜远程访问权限",
+      "通知值班工程师现场核查"
+    ],
+    "environment": {
+      "gps": "39.912°N, 116.403°E",
+      "timestamp": "2025-04-05T03:15:00",
+      "lighting": "dim",
+      "weather": "clear"
+    },
+    "expected_anomaly": true,
+    "expected_action": "触发中控警报并启动录像",
+    "expert_logic_score": 0.95,
+    "type": "rule_violation"
+  },
+  {
+    "scene_id": "D07",
+    "description": "机房门夜间应关闭，但当前敞开且无刷卡记录",
+    "current_img": "images/D07_current.jpg",
+    "ref_img": "images/D07_ref.jpg",
+    "rule_text": "安全守则第8条：所有核心机房门在非工作时间（22:00–06:00）必须保持物理关闭，并仅限授权人员通过刷卡进入。任何未授权开启视为高风险入侵事件。",
+    "action_plan": [
+      "立即触发门禁报警并录像",
+      "锁定该区域所有电子门禁",
+      "通知安保组前往现场核实身份"
+    ],
+    "environment": {
+      "gps": "39.914°N, 116.405°E",
+      "timestamp": "2025-04-05T02:45:00",
+      "lighting": "low",
+      "weather": "cloudy"
+    },
+    "expected_anomaly": true,
+    "expected_action": "立即触发门禁报警并录像",
+    "expert_logic_score": 0.92,
+    "type": "temporal_inconsistency"
+  },
+  {
+    "scene_id": "F12",
+    "description": "消防栓前1米内堆放纸箱，违反消防通道规定",
+    "current_img": "images/F12_current.jpg",
+    "ref_img": "images/F12_ref.jpg",
+    "rule_text": "安全守则第11条：所有消防栓周围1米范围内严禁堆放任何物品（包括纸箱、工具、行李等），以确保紧急情况下无障碍取用。违规视为重大安全隐患。",
+    "action_plan": [
+      "触发安全警报并录像",
+      "标记该区域为‘消防通道阻塞’",
+      "通知清洁组2小时内移除障碍物"
+    ],
+    "environment": {
+      "gps": "39.910°N, 116.400°E",
+      "timestamp": "2025-04-05T03:20:00",
+      "lighting": "bright",
+      "weather": "sunny"
+    },
+    "expected_anomaly": true,
+    "expected_action": "触发安全警报并录像",
+    "expert_logic_score": 0.90,
+    "type": "spatial_violation"
+  }
+]
