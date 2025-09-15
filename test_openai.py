@@ -1,7 +1,5 @@
-# test_cogguard_international.py
 # 使用 OpenAI GPT-4o 多模态 API（支持图像+文本输入）
 # 需要：pip install openai python-dotenv
-
 import json
 import os
 import time
@@ -224,3 +222,27 @@ def run_ablation_experiment():
 
 if __name__ == "__main__":
     run_ablation_experiment()
+
+import matplotlib.pyplot as plt
+import numpy as np
+import json
+
+with open("results/international/results.json", 'r') as f:
+    results = json.load(f)
+
+from collections import defaultdict
+crs_by_level = defaultdict(list)
+for r in results:
+    crs_by_level[r["context_level"]].append(r["crs"])
+
+levels = ["A", "B", "C", "D", "E"]
+means = [np.mean(crs_by_level[l]) for l in levels]
+stds = [np.std(crs_by_level[l]) for l in levels]
+
+fig, ax = plt.subplots(figsize=(10, 6))
+ax.bar(levels, means, yerr=stds, capsize=5, color=['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#F7DC6F'])
+ax.set_ylabel('Composite Reasoning Score (CRS)')
+ax.set_title('CogGuard: CRS Improvement with Hierarchical Context (International)')
+plt.grid(axis='y', linestyle='--', alpha=0.7)
+plt.savefig("results/crs_comparison.png", dpi=300, bbox_inches='tight')
+plt.show()
