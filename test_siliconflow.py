@@ -1,40 +1,34 @@
-# test_cogguard_china.py
-# 使用 Qwen2-VL-7B 本地模型（国内可用，无需API）
-# 需要：pip install transformers torch accelerate pillow
-
 import json
 import os
 import time
+import base64
 from pathlib import Path
-from PIL import Image
-from transformers import AutoTokenizer, AutoModelForCausalLM
-import torch
+from dotenv import load_dotenv
+import requests
 
 # ==================== 配置区 ====================
-MODEL_NAME = "Qwen/Qwen2-VL-7B-Instruct"  # 或 Qwen/Qwen-VL-Chat
+load_dotenv()  # 从 .env 文件读取 API_KEY
+SILICONFLOW_API_KEY = os.getenv("SILICONFLOW_API_KEY")  # ← 在 .env 中填写：SILICONFLOW_API_KEY=your-key-here
+MODEL_ID = "qwen/qwen2-vl-7b-instruct"  # 推荐：qwen/qwen2-vl-7b-instruct（轻量）或 qwen/qwen2-vl-72b-instruct（更强）
 DATA_FILE = "cogguard_bench_v2.json"
 IMAGE_DIR = "images"
-OUTPUT_DIR = "results/china"
-SLEEP_DELAY = 0.5  # 本地模型较快，可降低延迟
+OUTPUT_DIR = "results/china_siliconflow"
+SLEEP_DELAY = 1.0  # SiliconFlow 建议 ≤1次/秒，避免限流
 
 # 创建输出目录
 Path(OUTPUT_DIR).mkdir(parents=True, exist_ok=True)
 
-# 加载模型和tokenizer（首次运行会自动下载）
-print("🔄 正在加载 Qwen2-VL 模型，请耐心等待...")
-tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME, trust_remote_code=True)
-model = AutoModelForCausalLM.from_pretrained(
-    MODEL_NAME,
-    torch_dtype=torch.float16,
-    device_map="auto",
-    trust_remote_code=True
-)
-print("✅ 模型加载完成！")
+# ==================== 辅助函数：将图片转为 Base64 ====================
+def encode_image(image_path):
+    with open(image_path, "rb") as image_file:
+        return base64.b64encode(image_file.read()).decode('utf-8')
 
 # ==================== 构建提示词函数 ====================
 def build_prompt(current_img_path: str, ref_img_path: str, rule: str, action_plan: List[str], env: Dict, context_level: str) -> str:
     """
-    构建 Qwen-VL 的纯文本提示（图像通过 tokenizer 自动处理）
+    构建 SiliconFlow API 所需的纯文本提示（图像通过 base64 传输）
+    :param context_level: 'A', 'B', 'C', 'D', 'E'
+    :return: 完整提示字符串
     """
     text_parts = []
 
@@ -121,32 +115,58 @@ def run_ablation_experiment():
             try:
                 print(f"[{level_name}] Processing {test_case['scene_id']}...")
 
+                # 构建提示词
                 prompt = build_prompt(current_img_path, ref_img_path, rule, actions, env, level_name[0])
 
-                # 加载当前图像
-                current_image = Image.open(current_img_path).convert("RGB")
+                # 编码当前图像为 base64
+                current_base64 = encode_image(current_img_path)
 
-                # Qwen-VL 输入格式：[image, text]
-                inputs = tokenizer.apply_chat_template(
-                    [{"role": "user", "image": current_image, "content": prompt}],
-                    tokenize=True,
-                    add_generation_prompt=True,
-                    return_tensors="pt"
-                ).to(model.device)
+                # 构造 SiliconFlow 请求体
+                payload = {
+                    "model": MODEL_ID,
+                    "messages": [
+                        {
+                            "role": "user",
+                            "content": [
+                                {"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{current_base64}"}},
+                                {"type": "text", "text": prompt}
+                            ]
+                        }
+                    ],
+                    "max_tokens": 512,
+                    "temperature": 0.1,
+                    "top_p": 0.9,
+                    "stream": False
+                }
 
-                # 生成响应
-                outputs = model.generate(inputs, max_new_tokens=512, do_sample=False)
-                response_text = tokenizer.decode(outputs[0][inputs.shape[1]:], skip_special_tokens=True)
+                headers = {
+                    "Authorization": f"Bearer {SILICONFLOW_API_KEY}",
+                    "Content-Type": "application/json"
+                }
 
-                # 解析 JSON
+                # 发送请求
+                response = requests.post(
+                    "https://api.siliconflow.cn/v1/chat/completions",
+                    json=payload,
+                    headers=headers,
+                    timeout=30
+                )
+
+                if response.status_code != 200:
+                    raise Exception(f"API 错误 {response.status_code}: {response.text}")
+
+                result_json = response.json()
+                content = result_json["choices"][0]["message"]["content"].strip()
+
+                # 解析 JSON（容错处理）
                 import re
-                json_match = re.search(r'({.*})', response_text, re.DOTALL)
+                json_match = re.search(r'({.*})', content, re.DOTALL)
                 if not json_match:
-                    raise ValueError(f"无法解析响应为JSON: {response_text[:200]}...")
+                    raise ValueError(f"无法解析响应为JSON: {content[:200]}...")
 
                 llm_output = json.loads(json_match.group(1))
 
-                # 强制类型转换
+                # 强制类型转换（防格式错误）
                 llm_output["anomaly_detected"] = bool(llm_output.get("anomaly_detected", False))
                 llm_output["confidence"] = float(llm_output.get("confidence", 0.5))
                 llm_output["action"] = str(llm_output.get("action", ""))
@@ -158,7 +178,7 @@ def run_ablation_experiment():
                     "context_level": level_name,
                     "model_response": llm_output,
                     "crs": crs,
-                    "raw_response": response_text,
+                    "raw_response": content,
                     "ground_truth": {
                         "expected_anomaly": test_case["expected_anomaly"],
                         "expected_action": test_case["expected_action"],
@@ -169,7 +189,7 @@ def run_ablation_experiment():
                 results.append(result)
 
                 print(f"✅ Success: {test_case['scene_id']} | {level_name} | CRS={crs}")
-                time.sleep(SLEEP_DELAY)
+                time.sleep(SLEEP_DELAY)  # 遵守速率限制
 
             except Exception as e:
                 print(f"❌ Error on {test_case['scene_id']} ({level_name}): {e}")
@@ -192,7 +212,7 @@ def run_ablation_experiment():
     with open(output_path, 'w', encoding='utf-8') as f:
         json.dump(results, f, ensure_ascii=False, indent=2)
 
-    print(f"\n🎉 国内版实验完成！结果已保存至：{output_path}")
+    print(f"\n🎉 国内版（SiliconFlow）实验完成！结果已保存至：{output_path}")
 
     # 汇总统计
     from collections import defaultdict
@@ -200,10 +220,28 @@ def run_ablation_experiment():
     for r in results:
         crs_by_level[r["context_level"]].append(r["crs"])
 
-    print("\n📊 国内版 CRSSummary：")
+    print("\n📊 国内版 CRSSummary（SiliconFlow）：")
     for level, scores in crs_by_level.items():
         avg = sum(scores) / len(scores)
         print(f"{level}: {avg:.4f} (n={len(scores)})")
+
+    # 可视化对比图（可选）
+    try:
+        import matplotlib.pyplot as plt
+        import numpy as np
+        levels = ["A", "B", "C", "D", "E"]
+        means = [np.mean(crs_by_level[l]) for l in levels]
+        stds = [np.std(crs_by_level[l]) for l in levels]
+
+        fig, ax = plt.subplots(figsize=(10, 6))
+        ax.bar(levels, means, yerr=stds, capsize=5, color=['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#F7DC6F'])
+        ax.set_ylabel('Composite Reasoning Score (CRS)')
+        ax.set_title('CogGuard: CRS Improvement with Hierarchical Context (SiliconFlow API)')
+        plt.grid(axis='y', linestyle='--', alpha=0.7)
+        plt.savefig(os.path.join(OUTPUT_DIR, "crs_comparison.png"), dpi=300, bbox_inches='tight')
+        print("📈 CRS 图表已保存至：results/china_siliconflow/crs_comparison.png")
+    except ImportError:
+        print("⚠️ 未安装 matplotlib，跳过绘图。运行 `pip install matplotlib` 可生成图表。")
 
 if __name__ == "__main__":
     run_ablation_experiment()
