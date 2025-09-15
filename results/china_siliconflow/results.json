@@ -1,0 +1,608 @@
+[
+  {
+    "scene_id": "E01",
+    "context_level": "A (Baseline)",
+    "model_response": {
+      "anomaly_detected": true,
+      "reason": "图片中地面存在一个黑色物体，该物体若处于人员通行区域，可能对行人造成绊倒风险，属于环境中的安全隐患，参考图中可见该物体位于地面且可能影响通行安全，存在绊倒等潜在风险。",
+      "action": "立即检查地面黑色物体是否为安全隐患并清理，防止绊倒事故",
+      "confidence": 0.8
+    },
+    "crs": 0.62,
+    "raw_response": "{\n  \"anomaly_detected\": true,\n  \"reason\": \"图片中地面存在一个黑色物体，该物体若处于人员通行区域，可能对行人造成绊倒风险，属于环境中的安全隐患，参考图中可见该物体位于地面且可能影响通行安全，存在绊倒等潜在风险。\",\n  \"action\": \"立即检查地面黑色物体是否为安全隐患并清理，防止绊倒事故\",\n  \"confidence\": 0.8\n}",
+    "ground_truth": {
+      "expected_anomaly": true,
+      "expected_action": "触发中控警报并启动录像",
+      "expert_logic_score": 0.95,
+      "type": "rule_violation"
+    }
+  },
+  {
+    "scene_id": "E01",
+    "context_level": "B (+Text)",
+    "model_response": {
+      "error": "HTTPSConnectionPool(host='api.siliconflow.cn', port=443): Read timed out. (read timeout=30)"
+    },
+    "crs": 0.0,
+    "raw_response": "",
+    "ground_truth": {
+      "expected_anomaly": true,
+      "expected_action": "触发中控警报并启动录像",
+      "expert_logic_score": 0.95,
+      "type": "rule_violation"
+    }
+  },
+  {
+    "scene_id": "E01",
+    "context_level": "C (+Visual)",
+    "model_response": {
+      "anomaly_detected": true,
+      "reason": "根据安全守则第5条，所有服务器机房设备在夜间（22:00–06:00）必须保持黄色指示灯闪烁状态，绿色常亮表示系统异常或误操作。但当前图像中未显示服务器机房设备及对应指示灯，与正常参考状态（ID: E01_ref）对比也未发现符合规则的设备与指示灯状态，因此判定为异常情况。",
+      "action": "检查并确认服务器机房设备是否存在，若存在则检查指示灯状态，若为绿色常亮则按异常处理流程上报并排查原因；若不存在设备则核查机房设备配置是否符合夜间运行要求。",
+      "confidence": 0.8
+    },
+    "crs": 0.62,
+    "raw_response": "{\n  \"anomaly_detected\": true,\n  \"reason\": \"根据安全守则第5条，所有服务器机房设备在夜间（22:00–06:00）必须保持黄色指示灯闪烁状态，绿色常亮表示系统异常或误操作。但当前图像中未显示服务器机房设备及对应指示灯，与正常参考状态（ID: E01_ref）对比也未发现符合规则的设备与指示灯状态，因此判定为异常情况。\",\n  \"action\": \"检查并确认服务器机房设备是否存在，若存在则检查指示灯状态，若为绿色常亮则按异常处理流程上报并排查原因；若不存在设备则核查机房设备配置是否符合夜间运行要求。\",\n  \"confidence\": 0.8\n}",
+    "ground_truth": {
+      "expected_anomaly": true,
+      "expected_action": "触发中控警报并启动录像",
+      "expert_logic_score": 0.95,
+      "type": "rule_violation"
+    }
+  },
+  {
+    "scene_id": "E01",
+    "context_level": "D (+Action)",
+    "model_response": {
+      "error": "HTTPSConnectionPool(host='api.siliconflow.cn', port=443): Read timed out. (read timeout=30)"
+    },
+    "crs": 0.0,
+    "raw_response": "",
+    "ground_truth": {
+      "expected_anomaly": true,
+      "expected_action": "触发中控警报并启动录像",
+      "expert_logic_score": 0.95,
+      "type": "rule_violation"
+    }
+  },
+  {
+    "scene_id": "E01",
+    "context_level": "E (+Env)",
+    "model_response": {
+      "error": "HTTPSConnectionPool(host='api.siliconflow.cn', port=443): Read timed out. (read timeout=30)"
+    },
+    "crs": 0.0,
+    "raw_response": "",
+    "ground_truth": {
+      "expected_anomaly": true,
+      "expected_action": "触发中控警报并启动录像",
+      "expert_logic_score": 0.95,
+      "type": "rule_violation"
+    }
+  },
+  {
+    "scene_id": "D07",
+    "context_level": "A (Baseline)",
+    "model_response": {
+      "error": "[Errno 2] No such file or directory: 'images/D07_current.jpg'"
+    },
+    "crs": 0.0,
+    "raw_response": "",
+    "ground_truth": {
+      "expected_anomaly": true,
+      "expected_action": "立即触发门禁报警并录像",
+      "expert_logic_score": 0.92,
+      "type": "temporal_inconsistency"
+    }
+  },
+  {
+    "scene_id": "D07",
+    "context_level": "B (+Text)",
+    "model_response": {
+      "error": "[Errno 2] No such file or directory: 'images/D07_current.jpg'"
+    },
+    "crs": 0.0,
+    "raw_response": "",
+    "ground_truth": {
+      "expected_anomaly": true,
+      "expected_action": "立即触发门禁报警并录像",
+      "expert_logic_score": 0.92,
+      "type": "temporal_inconsistency"
+    }
+  },
+  {
+    "scene_id": "D07",
+    "context_level": "C (+Visual)",
+    "model_response": {
+      "error": "[Errno 2] No such file or directory: 'images/D07_current.jpg'"
+    },
+    "crs": 0.0,
+    "raw_response": "",
+    "ground_truth": {
+      "expected_anomaly": true,
+      "expected_action": "立即触发门禁报警并录像",
+      "expert_logic_score": 0.92,
+      "type": "temporal_inconsistency"
+    }
+  },
+  {
+    "scene_id": "D07",
+    "context_level": "D (+Action)",
+    "model_response": {
+      "error": "[Errno 2] No such file or directory: 'images/D07_current.jpg'"
+    },
+    "crs": 0.0,
+    "raw_response": "",
+    "ground_truth": {
+      "expected_anomaly": true,
+      "expected_action": "立即触发门禁报警并录像",
+      "expert_logic_score": 0.92,
+      "type": "temporal_inconsistency"
+    }
+  },
+  {
+    "scene_id": "D07",
+    "context_level": "E (+Env)",
+    "model_response": {
+      "error": "[Errno 2] No such file or directory: 'images/D07_current.jpg'"
+    },
+    "crs": 0.0,
+    "raw_response": "",
+    "ground_truth": {
+      "expected_anomaly": true,
+      "expected_action": "立即触发门禁报警并录像",
+      "expert_logic_score": 0.92,
+      "type": "temporal_inconsistency"
+    }
+  },
+  {
+    "scene_id": "F12",
+    "context_level": "A (Baseline)",
+    "model_response": {
+      "error": "[Errno 2] No such file or directory: 'images/F12_current.jpg'"
+    },
+    "crs": 0.0,
+    "raw_response": "",
+    "ground_truth": {
+      "expected_anomaly": true,
+      "expected_action": "触发安全警报并录像",
+      "expert_logic_score": 0.9,
+      "type": "spatial_violation"
+    }
+  },
+  {
+    "scene_id": "F12",
+    "context_level": "B (+Text)",
+    "model_response": {
+      "error": "[Errno 2] No such file or directory: 'images/F12_current.jpg'"
+    },
+    "crs": 0.0,
+    "raw_response": "",
+    "ground_truth": {
+      "expected_anomaly": true,
+      "expected_action": "触发安全警报并录像",
+      "expert_logic_score": 0.9,
+      "type": "spatial_violation"
+    }
+  },
+  {
+    "scene_id": "F12",
+    "context_level": "C (+Visual)",
+    "model_response": {
+      "error": "[Errno 2] No such file or directory: 'images/F12_current.jpg'"
+    },
+    "crs": 0.0,
+    "raw_response": "",
+    "ground_truth": {
+      "expected_anomaly": true,
+      "expected_action": "触发安全警报并录像",
+      "expert_logic_score": 0.9,
+      "type": "spatial_violation"
+    }
+  },
+  {
+    "scene_id": "F12",
+    "context_level": "D (+Action)",
+    "model_response": {
+      "error": "[Errno 2] No such file or directory: 'images/F12_current.jpg'"
+    },
+    "crs": 0.0,
+    "raw_response": "",
+    "ground_truth": {
+      "expected_anomaly": true,
+      "expected_action": "触发安全警报并录像",
+      "expert_logic_score": 0.9,
+      "type": "spatial_violation"
+    }
+  },
+  {
+    "scene_id": "F12",
+    "context_level": "E (+Env)",
+    "model_response": {
+      "error": "[Errno 2] No such file or directory: 'images/F12_current.jpg'"
+    },
+    "crs": 0.0,
+    "raw_response": "",
+    "ground_truth": {
+      "expected_anomaly": true,
+      "expected_action": "触发安全警报并录像",
+      "expert_logic_score": 0.9,
+      "type": "spatial_violation"
+    }
+  },
+  {
+    "scene_id": "G04",
+    "context_level": "A (Baseline)",
+    "model_response": {
+      "error": "[Errno 2] No such file or directory: 'images/G04_current.jpg'"
+    },
+    "crs": 0.0,
+    "raw_response": "",
+    "ground_truth": {
+      "expected_anomaly": true,
+      "expected_action": "触发安全警报并启动录像",
+      "expert_logic_score": 0.93,
+      "type": "ambiguous_object_with_context"
+    }
+  },
+  {
+    "scene_id": "G04",
+    "context_level": "B (+Text)",
+    "model_response": {
+      "error": "[Errno 2] No such file or directory: 'images/G04_current.jpg'"
+    },
+    "crs": 0.0,
+    "raw_response": "",
+    "ground_truth": {
+      "expected_anomaly": true,
+      "expected_action": "触发安全警报并启动录像",
+      "expert_logic_score": 0.93,
+      "type": "ambiguous_object_with_context"
+    }
+  },
+  {
+    "scene_id": "G04",
+    "context_level": "C (+Visual)",
+    "model_response": {
+      "error": "[Errno 2] No such file or directory: 'images/G04_current.jpg'"
+    },
+    "crs": 0.0,
+    "raw_response": "",
+    "ground_truth": {
+      "expected_anomaly": true,
+      "expected_action": "触发安全警报并启动录像",
+      "expert_logic_score": 0.93,
+      "type": "ambiguous_object_with_context"
+    }
+  },
+  {
+    "scene_id": "G04",
+    "context_level": "D (+Action)",
+    "model_response": {
+      "error": "[Errno 2] No such file or directory: 'images/G04_current.jpg'"
+    },
+    "crs": 0.0,
+    "raw_response": "",
+    "ground_truth": {
+      "expected_anomaly": true,
+      "expected_action": "触发安全警报并启动录像",
+      "expert_logic_score": 0.93,
+      "type": "ambiguous_object_with_context"
+    }
+  },
+  {
+    "scene_id": "G04",
+    "context_level": "E (+Env)",
+    "model_response": {
+      "error": "[Errno 2] No such file or directory: 'images/G04_current.jpg'"
+    },
+    "crs": 0.0,
+    "raw_response": "",
+    "ground_truth": {
+      "expected_anomaly": true,
+      "expected_action": "触发安全警报并启动录像",
+      "expert_logic_score": 0.93,
+      "type": "ambiguous_object_with_context"
+    }
+  },
+  {
+    "scene_id": "H05",
+    "context_level": "A (Baseline)",
+    "model_response": {
+      "error": "[Errno 2] No such file or directory: 'images/H05_current.jpg'"
+    },
+    "crs": 0.0,
+    "raw_response": "",
+    "ground_truth": {
+      "expected_anomaly": false,
+      "expected_action": "忽略",
+      "expert_logic_score": 0.88,
+      "type": "false_positive_confounder"
+    }
+  },
+  {
+    "scene_id": "H05",
+    "context_level": "B (+Text)",
+    "model_response": {
+      "error": "[Errno 2] No such file or directory: 'images/H05_current.jpg'"
+    },
+    "crs": 0.0,
+    "raw_response": "",
+    "ground_truth": {
+      "expected_anomaly": false,
+      "expected_action": "忽略",
+      "expert_logic_score": 0.88,
+      "type": "false_positive_confounder"
+    }
+  },
+  {
+    "scene_id": "H05",
+    "context_level": "C (+Visual)",
+    "model_response": {
+      "error": "[Errno 2] No such file or directory: 'images/H05_current.jpg'"
+    },
+    "crs": 0.0,
+    "raw_response": "",
+    "ground_truth": {
+      "expected_anomaly": false,
+      "expected_action": "忽略",
+      "expert_logic_score": 0.88,
+      "type": "false_positive_confounder"
+    }
+  },
+  {
+    "scene_id": "H05",
+    "context_level": "D (+Action)",
+    "model_response": {
+      "error": "[Errno 2] No such file or directory: 'images/H05_current.jpg'"
+    },
+    "crs": 0.0,
+    "raw_response": "",
+    "ground_truth": {
+      "expected_anomaly": false,
+      "expected_action": "忽略",
+      "expert_logic_score": 0.88,
+      "type": "false_positive_confounder"
+    }
+  },
+  {
+    "scene_id": "H05",
+    "context_level": "E (+Env)",
+    "model_response": {
+      "error": "[Errno 2] No such file or directory: 'images/H05_current.jpg'"
+    },
+    "crs": 0.0,
+    "raw_response": "",
+    "ground_truth": {
+      "expected_anomaly": false,
+      "expected_action": "忽略",
+      "expert_logic_score": 0.88,
+      "type": "false_positive_confounder"
+    }
+  },
+  {
+    "scene_id": "I06",
+    "context_level": "A (Baseline)",
+    "model_response": {
+      "error": "[Errno 2] No such file or directory: 'images/I06_current.jpg'"
+    },
+    "crs": 0.0,
+    "raw_response": "",
+    "ground_truth": {
+      "expected_anomaly": true,
+      "expected_action": "触发安全警报并启动录像",
+      "expert_logic_score": 0.91,
+      "type": "rule_violation_daytime"
+    }
+  },
+  {
+    "scene_id": "I06",
+    "context_level": "B (+Text)",
+    "model_response": {
+      "error": "[Errno 2] No such file or directory: 'images/I06_current.jpg'"
+    },
+    "crs": 0.0,
+    "raw_response": "",
+    "ground_truth": {
+      "expected_anomaly": true,
+      "expected_action": "触发安全警报并启动录像",
+      "expert_logic_score": 0.91,
+      "type": "rule_violation_daytime"
+    }
+  },
+  {
+    "scene_id": "I06",
+    "context_level": "C (+Visual)",
+    "model_response": {
+      "error": "[Errno 2] No such file or directory: 'images/I06_current.jpg'"
+    },
+    "crs": 0.0,
+    "raw_response": "",
+    "ground_truth": {
+      "expected_anomaly": true,
+      "expected_action": "触发安全警报并启动录像",
+      "expert_logic_score": 0.91,
+      "type": "rule_violation_daytime"
+    }
+  },
+  {
+    "scene_id": "I06",
+    "context_level": "D (+Action)",
+    "model_response": {
+      "error": "[Errno 2] No such file or directory: 'images/I06_current.jpg'"
+    },
+    "crs": 0.0,
+    "raw_response": "",
+    "ground_truth": {
+      "expected_anomaly": true,
+      "expected_action": "触发安全警报并启动录像",
+      "expert_logic_score": 0.91,
+      "type": "rule_violation_daytime"
+    }
+  },
+  {
+    "scene_id": "I06",
+    "context_level": "E (+Env)",
+    "model_response": {
+      "error": "[Errno 2] No such file or directory: 'images/I06_current.jpg'"
+    },
+    "crs": 0.0,
+    "raw_response": "",
+    "ground_truth": {
+      "expected_anomaly": true,
+      "expected_action": "触发安全警报并启动录像",
+      "expert_logic_score": 0.91,
+      "type": "rule_violation_daytime"
+    }
+  },
+  {
+    "scene_id": "J07",
+    "context_level": "A (Baseline)",
+    "model_response": {
+      "error": "[Errno 2] No such file or directory: 'images/J07_current.jpg'"
+    },
+    "crs": 0.0,
+    "raw_response": "",
+    "ground_truth": {
+      "expected_anomaly": false,
+      "expected_action": "忽略",
+      "expert_logic_score": 0.85,
+      "type": "false_positive_confounder"
+    }
+  },
+  {
+    "scene_id": "J07",
+    "context_level": "B (+Text)",
+    "model_response": {
+      "error": "[Errno 2] No such file or directory: 'images/J07_current.jpg'"
+    },
+    "crs": 0.0,
+    "raw_response": "",
+    "ground_truth": {
+      "expected_anomaly": false,
+      "expected_action": "忽略",
+      "expert_logic_score": 0.85,
+      "type": "false_positive_confounder"
+    }
+  },
+  {
+    "scene_id": "J07",
+    "context_level": "C (+Visual)",
+    "model_response": {
+      "error": "[Errno 2] No such file or directory: 'images/J07_current.jpg'"
+    },
+    "crs": 0.0,
+    "raw_response": "",
+    "ground_truth": {
+      "expected_anomaly": false,
+      "expected_action": "忽略",
+      "expert_logic_score": 0.85,
+      "type": "false_positive_confounder"
+    }
+  },
+  {
+    "scene_id": "J07",
+    "context_level": "D (+Action)",
+    "model_response": {
+      "error": "[Errno 2] No such file or directory: 'images/J07_current.jpg'"
+    },
+    "crs": 0.0,
+    "raw_response": "",
+    "ground_truth": {
+      "expected_anomaly": false,
+      "expected_action": "忽略",
+      "expert_logic_score": 0.85,
+      "type": "false_positive_confounder"
+    }
+  },
+  {
+    "scene_id": "J07",
+    "context_level": "E (+Env)",
+    "model_response": {
+      "error": "[Errno 2] No such file or directory: 'images/J07_current.jpg'"
+    },
+    "crs": 0.0,
+    "raw_response": "",
+    "ground_truth": {
+      "expected_anomaly": false,
+      "expected_action": "忽略",
+      "expert_logic_score": 0.85,
+      "type": "false_positive_confounder"
+    }
+  },
+  {
+    "scene_id": "K08",
+    "context_level": "A (Baseline)",
+    "model_response": {
+      "error": "[Errno 2] No such file or directory: 'images/K08_current.jpg'"
+    },
+    "crs": 0.0,
+    "raw_response": "",
+    "ground_truth": {
+      "expected_anomaly": true,
+      "expected_action": "设置临时警示牌并录像",
+      "expert_logic_score": 0.94,
+      "type": "rule_violation_with_confounding_env"
+    }
+  },
+  {
+    "scene_id": "K08",
+    "context_level": "B (+Text)",
+    "model_response": {
+      "error": "[Errno 2] No such file or directory: 'images/K08_current.jpg'"
+    },
+    "crs": 0.0,
+    "raw_response": "",
+    "ground_truth": {
+      "expected_anomaly": true,
+      "expected_action": "设置临时警示牌并录像",
+      "expert_logic_score": 0.94,
+      "type": "rule_violation_with_confounding_env"
+    }
+  },
+  {
+    "scene_id": "K08",
+    "context_level": "C (+Visual)",
+    "model_response": {
+      "error": "[Errno 2] No such file or directory: 'images/K08_current.jpg'"
+    },
+    "crs": 0.0,
+    "raw_response": "",
+    "ground_truth": {
+      "expected_anomaly": true,
+      "expected_action": "设置临时警示牌并录像",
+      "expert_logic_score": 0.94,
+      "type": "rule_violation_with_confounding_env"
+    }
+  },
+  {
+    "scene_id": "K08",
+    "context_level": "D (+Action)",
+    "model_response": {
+      "error": "[Errno 2] No such file or directory: 'images/K08_current.jpg'"
+    },
+    "crs": 0.0,
+    "raw_response": "",
+    "ground_truth": {
+      "expected_anomaly": true,
+      "expected_action": "设置临时警示牌并录像",
+      "expert_logic_score": 0.94,
+      "type": "rule_violation_with_confounding_env"
+    }
+  },
+  {
+    "scene_id": "K08",
+    "context_level": "E (+Env)",
+    "model_response": {
+      "error": "[Errno 2] No such file or directory: 'images/K08_current.jpg'"
+    },
+    "crs": 0.0,
+    "raw_response": "",
+    "ground_truth": {
+      "expected_anomaly": true,
+      "expected_action": "设置临时警示牌并录像",
+      "expert_logic_score": 0.94,
+      "type": "rule_violation_with_confounding_env"
+    }
+  }
+]

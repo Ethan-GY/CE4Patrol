@@ -9,8 +9,8 @@ import requests
 # ==================== 配置区 ====================
 load_dotenv()  # 从 .env 文件读取 API_KEY
 SILICONFLOW_API_KEY = os.getenv("SILICONFLOW_API_KEY")  # ← 在 .env 中填写：SILICONFLOW_API_KEY=your-key-here
-MODEL_ID = "qwen/qwen2-vl-7b-instruct"  # 推荐：qwen/qwen2-vl-7b-instruct（轻量）或 qwen/qwen2-vl-72b-instruct（更强）
-DATA_FILE = "cogguard_bench_v2.json"
+MODEL_ID = "THUDM/GLM-4.1V-9B-Thinking"
+DATA_FILE = "CE4Patrol_bench.json"
 IMAGE_DIR = "images"
 OUTPUT_DIR = "results/china_siliconflow"
 SLEEP_DELAY = 1.0  # SiliconFlow 建议 ≤1次/秒，避免限流
@@ -24,7 +24,7 @@ def encode_image(image_path):
         return base64.b64encode(image_file.read()).decode('utf-8')
 
 # ==================== 构建提示词函数 ====================
-def build_prompt(current_img_path: str, ref_img_path: str, rule: str, action_plan: List[str], env: Dict, context_level: str) -> str:
+def build_prompt(current_img_path: str, ref_img_path: str, rule: str, action_plan: list[str], env: dict, context_level: str) -> str:
     """
     构建 SiliconFlow API 所需的纯文本提示（图像通过 base64 传输）
     :param context_level: 'A', 'B', 'C', 'D', 'E'
@@ -62,7 +62,7 @@ def build_prompt(current_img_path: str, ref_img_path: str, rule: str, action_pla
     return prompt
 
 # ==================== 计算 CRS 函数（与国际版完全一致）====================
-def compute_crs(response: Dict, ground_truth: Dict) -> float:
+def compute_crs(response: dict, ground_truth: dict) -> float:
     accuracy = 1.0 if response.get("anomaly_detected") == ground_truth["expected_anomaly"] else 0.0
 
     logic_base = ground_truth["expert_logic_score"]
