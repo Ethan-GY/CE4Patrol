@@ -1,0 +1,10 @@
+ANOMALY_TYPES = [
+    "device_status_misindication",     # 设备指示灯错误
+    "fire_door_violation",             # 消防门违规
+    "camera_obstruction",              # 摄像头遮挡
+    "unauthorized_personnel",          # 非授权人员
+    "lighting_policy_violation",       # 灯光策略违规
+    "hazardous_object_proximity",      # 危险物靠近（如水杯）
+    "ambiguous_potential_fire_source", # 模糊火源（如烟头）
+    "ambiguous_sharp_object"           # 模糊尖锐物（如玻璃）
+]
