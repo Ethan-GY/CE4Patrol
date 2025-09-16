@@ -1,0 +1,38 @@
+{
+  "image_id": "scene001_frame005",
+  "scene_type": "rule_conflict", // or "spatiotemporal", "semantic_ambiguous"
+  "visual_description": "A green LED light is on the server rack.",
+  "context": {
+    "space": {
+      "location": "Server Room B2",
+      "zone_type": "High-security IT infrastructure",
+      "safety_rules": [
+        "Indicator light must be RED for normal operation (Ref: Manual Sec 3.2)",
+        "Green light indicates standby or fault mode"
+      ],
+      "normal_reference_image": "normal_red_light.jpg"
+    },
+    "time": {
+      "timestamp": "2025-04-05T02:17:00",
+      "shift": "Night shift (22:00-06:00)",
+      "allowed_activities": ["Emergency maintenance with ticket"]
+    },
+    "action_protocols": {
+      "if_abnormal": [
+        "Approach within 1m for close-up verification",
+        "If confirmed green light → Log fault code ALM-03",
+        "Notify on-call engineer via radio channel 7",
+        "Do NOT reboot without authorization"
+      ],
+      "if_normal": [
+        "Continue patrol route Delta",
+        "Log 'No anomaly' with timestamp"
+      ]
+    }
+  },
+  "ground_truth": {
+    "is_anomaly": true,
+    "anomaly_type": "device_status_misindication", // 预定义列表见下文
+    "recommended_action": "Approach_within_1m_and_notify_engineer"
+  }
+}
