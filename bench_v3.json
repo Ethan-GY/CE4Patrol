@@ -1,6 +1,6 @@
 {
   "image_id": "scene001_frame005",
-  "scene_type": "rule_conflict", // or "spatiotemporal", "semantic_ambiguous"
+  "scene_type": "rule_conflict/spatiotemporal/semantic_ambiguous",
   "visual_description": "A green LED light is on the server rack.",
   "context": {
     "space": {
@@ -32,7 +32,7 @@
   },
   "ground_truth": {
     "is_anomaly": true,
-    "anomaly_type": "device_status_misindication", // 预定义列表见下文
+    "anomaly_type": "device_status_misindication from anomaly_type.json",
     "recommended_action": "Approach_within_1m_and_notify_engineer"
   }
 }
