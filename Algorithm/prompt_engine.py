@@ -1,10 +1,11 @@
 PROMPT_TEMPLATE = """
-你是一个部署在机器狗上的视觉语言模型，负责安防异常检测。请根据提供的图像描述和上下文，完成以下任务：
+“System_prompt”：你是一个工业专家安防系统，负责安防异常检测。请严格按照一下步骤分析图像，并输出结构化JSON。
 
 【图像描述】
 {visual_description}
 
-【上下文信息】
+【可用上下文信息】
+<在此动态插入从JSON知识库中检索到的相关上下文>
 - 位置: {location} ({zone_type})
 - 时间: {timestamp} ({shift})
 - 安全规则: {safety_rules_str}
@@ -24,7 +25,7 @@ PROMPT_TEMPLATE = """
   "is_anomaly": true/false,
   "anomaly_type": "string 或 null",
   "reason": "string",
-  "recommended_actions": ["string", ...]
+  "recommended_actions": ["string1", ...]
 }}
 """
 
