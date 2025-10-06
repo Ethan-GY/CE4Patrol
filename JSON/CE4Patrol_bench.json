@@ -1,0 +1,14 @@
+{
+    "scene_id": "office_001",
+    "context_info": [
+        {
+            "ANOMALY_TYPES": "temporal",
+            "time": "time < 06:00 || time > 22:00",
+            "GPS": "office_floor_5",
+            "safety_rule": "time < 22:00 || time > 06:00，是工作时间，非工作时间，任何人员出现均属异常。",
+            "risk_level": "high",
+            "reference_photo": "ref_office_001.jpg",
+            "action_plan": "action_plan[1]"
+        }
+    ]
+}
