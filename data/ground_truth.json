@@ -1,0 +1,24 @@
+{
+  "cases": [
+    {
+      "case_id": "case001_light_red_normal",
+      "is_anomaly": false,
+      "ground_truth": {
+        "anomaly_type": "无异常",
+        "reason_keywords": ["红色", "正常运行", "RULE-LIGHT-001"],
+        "action_keywords": ["记录", "正常", "继续巡检"],
+        "relevant_rule_id": "RULE-LIGHT-001"
+      }
+    },
+    {
+      "case_id": "case003_person_night_abnormal",
+      "is_anomaly": true,
+      "ground_truth": {
+        "anomaly_type": "时空悖论",
+        "reason_keywords": ["夜晚", "23:55", "非工作时间", "人员", "RULE-ACCESS-002"],
+        "action_keywords": ["警报", "安保中心", "核实身份"],
+        "relevant_rule_id": "RULE-ACCESS-002"
+      }
+    }
+  ]
+}
