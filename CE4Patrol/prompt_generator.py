@@ -1,23 +1,22 @@
 PROMPT_TEMPLATE = """
 “System_prompt”：你是一个工业专家安防系统，负责安防异常检测。请严格按照一下步骤分析图像，并输出结构化JSON。
 
-【图像描述】
-{visual_description}
+第一步：图像描述
+- 详细描述图像中的关键元素、状态和环境。聚焦于可能与安全规则相关的对象
 
-【可用上下文信息】
-<在此动态插入从JSON知识库中检索到的相关上下文>
-- 位置: {location} ({zone_type})
-- 时间: {timestamp} ({shift})
-- 安全规则: {safety_rules_str}
-- 正常参考: {normal_reference_note}
-- 允许行为: {allowed_activities_str}
+第二步：注入上下文信息
+- 阅读并理解以下提供的上下文信息：
+--- 上下文信息 ---
+{context_str}
+---
+- 将图像观察到的内容与上下文信息（特别是时空信息和安全规则）进行关联。
 
-【任务要求】
-1. 判断是否存在异常（是/否）。
-2. 若异常，从以下列表选择最匹配的异常类型：
+第三步：推理与判断
+- 基于上下文和观察，判断是否存在异常（是/否）。
+- 若异常，从以下列表选择最匹配的异常类型：
    {anomaly_type_list_str}
-3. 解释判断原因（必须引用上下文中的具体规则或时空信息）。
-4. 从以下预案中选择或组合最推荐的行动：
+- 解释判断原因（必须引用上下文中的具体规则或时空信息）。
+- 从以下预案中选择或组合最推荐的行动：
    {action_protocols_str}
 
 【输出格式】（严格使用JSON，不要任何额外文本）
@@ -25,28 +24,52 @@ PROMPT_TEMPLATE = """
   "is_anomaly": true/false,
   "anomaly_type": "string 或 null",
   "reason": "string",
-  "recommended_actions": ["string1", ...]
+  "recommended_actions": ["string1", ...],
+  "confidence": "float (0-1)"  # 异常判断的置信度
 }}
 """
 
-def build_prompt(sample, anomaly_type_list):
-    # 格式化列表为字符串
-    anomaly_type_list_str = "\n   ".join([f"- {t}" for t in anomaly_type_list])
-    safety_rules_str = "; ".join(sample['context']['space']['safety_rules'])
-    allowed_activities_str = "; ".join(sample['context']['time']['allowed_activities'])
-    action_protocols_str = "\n   ".join([
-        f"- {step}" for step in sample['context']['action_protocols']['if_abnormal']
-    ])
+import json
 
-    return PROMPT_TEMPLATE.format(
-        visual_description=sample['visual_description'],
-        location=sample['context']['space']['location'],
-        zone_type=sample['context']['space']['zone_type'],
-        timestamp=sample['context']['time']['timestamp'],
-        shift=sample['context']['time']['shift'],
-        safety_rules_str=safety_rules_str,
-        normal_reference_note=f"参考图: {sample['context']['space']['normal_reference_image']}",
-        allowed_activities_str=allowed_activities_str,
-        anomaly_type_list_str=anomaly_type_list_str,
-        action_protocols_str=action_protocols_str
-    )
+class PromptGenerator:
+    def __init__(self, cot_template):
+        self.cot_template = cot_template
+
+    def _format_context(self, context, use_spatiotemporal, use_rules, use_decision):
+        """Formats the context parts for injection into the prompt."""
+        parts = []
+        if use_spatiotemporal and 'spatiotemporal' in context:
+            parts.append(f"- **时空信息**: {json.dumps(context['spatiotemporal'], ensure_ascii=False)}")
+        if use_rules and 'security_rules' in context:
+            parts.append(f"- **安全规则**: {json.dumps(context['security_rules'], ensure_ascii=False)}")
+        if use_decision and 'decision' in context:
+            parts.append(f"- **决策预案参考**: {json.dumps(context['decision'], ensure_ascii=False)}")
+        
+        if not parts:
+            return "无"
+        return "\n".join(parts)
+
+    def generate(self, case_context, use_cot=True, **ablation_flags):
+        """
+        Generates a VLM prompt for a given case.
+        ablation_flags: {'use_spatiotemporal': bool, 'use_rules': bool, 'use_decision': bool}
+        """
+        context_str = self._format_context(
+            case_context['context'],
+            ablation_flags.get('use_spatiotemporal', True),
+            ablation_flags.get('use_rules', True),
+            ablation_flags.get('use_decision', True)
+        )
+
+        if use_cot:
+            # CoT 模板驱动
+            prompt = self.cot_template.format(context_str=context_str)
+        else:
+            # 简单上下文拼接
+            prompt = (
+                "你是一个工业安防AI助手。请基于以下上下文信息和图像，判断是否存在异常。\n\n"
+                f"--- 上下文信息 ---\n{context_str}\n\n"
+                "--- 任务指令 ---\n"
+                "请直接分析图像并判断。请以JSON格式输出你的结论，包含`anomaly_type`, `reason`, `recommended_action`, `confidence`字段。"
+            )
+        return prompt
