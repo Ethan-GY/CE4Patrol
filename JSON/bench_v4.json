@@ -5,7 +5,7 @@
       "type": "temporal",
       "condition": "time < 06:00 || time > 22:00",
       "object_category": "person",
-      "normal_state": "absent", // 在此时段，人员应为“缺席”
+      "normal_state": "absent",
       "injected_prompt": "当前时间为凌晨，是非工作时间，任何人员出现均属异常。",
       "risk_level": "high"
     },
@@ -14,7 +14,7 @@
       "condition": "always",
       "object_category": "indicator_light",
       "attribute": "color",
-      "normal_state": "red", // 规则颠覆：常识是绿好，但这里是红好
+      "normal_state": "red",
       "injected_prompt": "根据设备手册，正常运行状态指示灯应为红色。绿色表示待机或故障。",
       "risk_level": "medium"
     },
