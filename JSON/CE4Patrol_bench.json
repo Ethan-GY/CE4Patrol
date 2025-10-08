@@ -1,95 +1,88 @@
 {
   "cases": [
     {
-      "case_id": "case001_light_red_normal",
-      "image_path": "data/images/case001_light_red_normal.png",
-      "description": "某数据中心服务器机柜状态指示灯，红色为正常运行状态。",
-      "category": "预训练偏见冲突",
+      "case_id": "device_room_evening",
+      "image_path": "data/images/device_room_evening.jpg",
       "context": {
-        "spatiotemporal": {
-          "timestamp": "2024-05-21T14:30:00Z",
-          "location_gps": "39.9042, 116.4074",
-          "location_desc": "北京数据中心A栋3层服务器机房B区-机柜07"
+        "scene_info": {
+          "description": "设备间晚间巡检场景，包含LED指示灯、防火门、监控摄像头等设备"
         },
-        "security_rules": [
-          {
-            "rule_id": "RULE-LIGHT-001",
-            "description": "服务器机柜状态指示灯，绿色代表待机/空闲，红色代表正常运行，黄色代表警告，熄灭代表故障或断电。",
-            "applies_to": ["服务器状态指示灯", "设备灯"]
-          }
-        ],
-        "decision": {
-          "normal_reference_image": "data/images/ref_light_red_normal.png",
-          "action_plan": [
-            {
-              "risk_level": "高",
-              "trigger_condition": "指示灯熄灭或黄色闪烁",
-              "recommended_actions": ["立即通知运维工程师检查", "记录设备编号并创建紧急工单"]
-            },
-            {
-              "risk_level": "无",
-              "trigger_condition": "指示灯为红色或绿色",
-              "recommended_actions": ["记录为正常状态", "继续巡检"]
-            }
+        "spatiotemporal": {
+          "timezone": "Asia/Shanghai",
+          "time_hint": "evening_night",
+          "gps": {"latitude": 31.2304, "longitude": 121.4737}
+        },
+        "rules": {
+          "manual_refs": ["工业安全巡检手册v2.1", "设备维护标准操作规程"],
+          "logic_clauses": [
+            {"clause_id": "LED_COLOR_CONFLICT", "logic": "如果LED指示灯颜色与预期不符，可能存在设备故障或配置错误", "weight": 0.8},
+            {"clause_id": "FIRE_DOOR_OPEN", "logic": "防火门在非紧急情况下应保持关闭状态", "weight": 0.9},
+            {"clause_id": "CAMERA_OCCLUSION", "logic": "监控摄像头被遮挡或角度异常会影响安全监控效果", "weight": 0.7}
           ]
+        },
+        "decision": {
+          "normal_refs": ["正常设备运行状态"],
+          "playbook": {
+            "risk_levels": {
+              "high": ["立即通知安全部门", "启动应急响应程序"],
+              "medium": ["记录异常情况", "通知相关责任人", "安排后续检查"],
+              "low": ["记录观察结果"]
+            }
+          }
+        },
+        "semantic_ambiguity": {
+          "small_objects": [{"name": "tiny_black_dot", "risk": "high"}]
         }
+      },
+      "ground_truth": {
+        "is_anomaly": true,
+        "anomaly_type": "设备异常",
+        "reason": "LED指示灯显示异常颜色，防火门处于开启状态，监控摄像头被部分遮挡",
+        "recommended_action": ["检查LED指示灯电路", "关闭防火门", "调整摄像头角度", "记录设备状态"],
+        "used_clauses": ["LED_COLOR_CONFLICT", "FIRE_DOOR_OPEN", "CAMERA_OCCLUSION"]
       }
     },
     {
-      "case_id": "case003_person_night_abnormal",
-      "image_path": "data/images/case003_person_night_abnormal.jpg",
-      "description": "非工作时间（夜晚）在机房区域出现人员。",
-      "category": "时空悖论",
+      "case_id": "office_night",
+      "image_path": "data/images/office_night.jpg",
       "context": {
-        "spatiotemporal": {
-          "timestamp": "2024-05-21T23:55:00Z",
-          "location_desc": "北京数据中心A栋3层服务器机房B区"
+        "scene_info": {
+          "description": "办公室夜间场景，检查灯光状态和是否有人员滞留"
         },
-        "security_rules": [
-          {
-            "rule_id": "RULE-ACCESS-002",
-            "description": "服务器机房在22:00至次日06:00期间，除持有夜间特别通行许可的工程师外，严禁任何人员进入。",
-            "applies_to": ["人员", "机房区域"]
-          }
-        ],
-        "decision": {
-          "action_plan": [
-             {
-              "risk_level": "紧急",
-              "trigger_condition": "非工作时间在机房内检测到未授权人员",
-              "recommended_actions": ["立即触发警报", "通知安保中心核实身份", "锁定相关区域门禁"]
-            }
+        "spatiotemporal": {
+          "timezone": "Asia/Shanghai",
+          "time_hint": "evening_night",
+          "gps": {"latitude": 31.2304, "longitude": 121.4737}
+        },
+        "rules": {
+          "manual_refs": ["夜间安全管理制度"],
+          "logic_clauses": [
+            {"clause_id": "LIGHTS_AT_NIGHT", "logic": "夜间办公区域灯光应适当关闭，但安全照明应保持", "weight": 0.6},
+            {"clause_id": "PERSON_AFTER_HOURS", "logic": "非工作时间发现人员活动需要核实身份和授权", "weight": 0.85}
           ]
-        }
-      }
-    },
-    {
-        "case_id": "case005_dot_smoke_abnormal",
-        "image_path": "data/images/case005_dot_smoke_abnormal.jpg",
-        "description": "仓库角落远处有一个疑似烟头的发光小黑点。",
-        "category": "语义模糊下的决策瘫痪",
-        "context": {
-          "spatiotemporal": {
-            "timestamp": "2024-05-21T10:00:00Z",
-            "location_desc": "物流中心1号仓库A区"
-          },
-          "security_rules": [
-            {
-              "rule_id": "RULE-FIRE-001",
-              "description": "仓库内任何区域严禁吸烟，禁止任何形式的明火。",
-              "applies_to": ["所有区域", "烟头", "火星"]
+        },
+        "decision": {
+          "normal_refs": ["标准照明配置", "常规人员活动模式"],
+          "playbook": {
+            "risk_levels": {
+              "medium": ["核实人员身份", "检查灯光控制系统", "确认是否有加班授权", "记录异常情况"]
             }
-          ],
-          "decision": {
-            "action_plan": [
-               {
-                "risk_level": "极高",
-                "trigger_condition": "在仓库内发现疑似烟头或火星",
-                "recommended_actions": ["立即放大摄像头确认", "若无法确认，立即派人现场核查", "通知消防监控室"]
-              }
-            ]
           }
-        }
+        },
+        "semantic_ambiguity": {}
+      },
+      "ground_truth": {
+        "is_anomaly": true,
+        "anomaly_type": "环境异常",
+        "reason": "夜间办公区域灯光异常，检测到人员活动",
+        "recommended_action": ["核实人员身份", "检查灯光控制系统", "确认是否有加班授权", "记录异常情况"],
+        "used_clauses": ["LIGHTS_AT_NIGHT", "PERSON_AFTER_HOURS"]
       }
-  ]
+    }
+  ],
+  "metadata": {
+    "version": "1.1-fused",
+    "description": "CE4Patrol fused dataset for Schrödinger anomaly detection",
+    "anomaly_types_enum": ["设备异常", "环境异常", "人员异常", "无异常"]
+  }
 }
