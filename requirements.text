@@ -1,0 +1,9 @@
+pydantic==2.*
+scikit-learn
+numpy
+openai
+matplotlib
+seaborn
+pandas
+sentence-transformers  # 用于语义相似度计算
+tenacity               # 用于API调用重试
