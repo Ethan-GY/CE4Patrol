@@ -1,73 +1,134 @@
+#!/usr/bin/env python3
+"""
+CE4Patrol Fused: Main experiment runner.
+"""
+import os
 import json
-import pandas as pd
-from ce4patrol.context_loader import load_data
-from ce4patrol.prompt_generator import PromptGenerator, COT_TEMPLATE
-from ce4patrol.vlm_caller import call_qwen_vl_api
-from ce4patrol.evaluation.metrics import calculate_accuracy_f1, calculate_logic_similarity, calculate_action_reliability
-from ce4patrol.evaluation.crs_calculator import calculate_crs
-from ce4patrol.analysis.visualizer import plot_results
-from tqdm import tqdm
+import logging
+from pathlib import Path
+from typing import Dict, List, Any
+from dataclasses import dataclass
 
-def run_experiment():
-    # 1. 加载数据
-    all_cases, all_ground_truths = load_data('data/context.json', 'data/ground_truth.json')
-    prompt_gen = PromptGenerator(COT_TEMPLATE)
-    api_key = "YOUR_DASHSCOPE_API_KEY"
+# 导入融合后的模块
+from ce4patrol.context_loader import ContextLoader
+from ce4patrol.prompt_generator import PromptGenerator
+from ce4patrol.vlm_caller import VLMCaller
+from ce4patrol.evaluation.metrics import MetricsEvaluator
+from ce4patrol.evaluation.crs_calculator import CRSCalculator
+from ce4patrol.analysis.visualizer import ExperimentVisualizer
+from ce4patrol.analysis.case_analyzer import CaseAnalyzer
 
-    # 2. 定义实验配置 (主实验 + 消融实验)
-    experiment_configs = {
-        "CE4Patrol_Full": {"use_cot": True, "use_spatiotemporal": True, "use_rules": True, "use_decision": True},
-        "No_CoT":         {"use_cot": False, "use_spatiotemporal": True, "use_rules": True, "use_decision": True},
-        "No_Rules":       {"use_cot": True, "use_spatiotemporal": True, "use_rules": False, "use_decision": True},
-        "No_Spatio":      {"use_cot": True, "use_spatiotemporal": False, "use_rules": True, "use_decision": True},
-        "Base_VLM":       {"use_cot": False, "use_spatiotemporal": False, "use_rules": False, "use_decision": False}, # 基础模型能力
-    }
+@dataclass
+class ExperimentConfig:
+    """实验配置"""
+    name: str
+    layers: List[str]  # ['S', 'R', 'D'] for spatiotemporal, rules, decision
+    enable_cot: bool
+
+
+# 定义所有消融实验
+ABLATIONS = [
+    ExperimentConfig("CE4_FULL", ["S", "R", "D"], True),
+    ExperimentConfig("NoCoT", ["S", "R", "D"], False),
+    ExperimentConfig("SR_only", ["S", "R"], True),
+    ExperimentConfig("S_only", ["S"], True),
+    ExperimentConfig("R_only", ["R"], True),
+    ExperimentConfig("D_only", ["D"], True),
+    ExperimentConfig("None", [], True),
+]
+
+
+def setup_logging():
+    """设置日志"""
+    logging.basicConfig(
+        level=logging.INFO,
+        format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    )
+
+def run_experiment(config: ExperimentConfig, dataset: Dict[str, Any], 
+                  vlm_caller: VLMCaller, metrics_evaluator: MetricsEvaluator) -> Dict[str, Any]:
+    logger = logging.getLogger(__name__)
+    logger.info(f"Running experiment: {config.name}")
     
-    results = []
-
-    # 3. 运行实验
-    for case_id, case_data in tqdm(all_cases.items(), desc="Processing Cases"):
-        gt_data = all_ground_truths[case_id]
+    prompt_generator = PromptGenerator()
+    crs_calculator = CRSCalculator()
+    
+    results = {"config": dataclasses.asdict(config), "scene_results": []}
+    anomaly_types_enum = dataset["metadata"].get("anomaly_types_enum", [])
+    
+    for case in dataset["cases"]:
+        case_id = case["case_id"]
+        image_path = case["image_path"]
         
-        for config_name, config_params in experiment_configs.items():
-            # 生成提示词
-            prompt = prompt_gen.generate(case_data, **config_params)
+        if not Path(image_path).exists():
+            logger.warning(f"Image not found for case {case_id}: {image_path}, skipping.")
+            continue
             
-            # 调用VLM
-            model_output = call_qwen_vl_api(api_key, case_data['image_path'], prompt)
+        prompt = prompt_generator.build_prompt(
+            case=case,
+            enable_cot=config.enable_cot,
+            inject_layers=config.layers,
+            anomaly_types_enum=anomaly_types_enum
+        )
+        
+        vlm_response = vlm_caller.call_vlm(prompt, image_path)
+        
+        if "error" in vlm_response:
+            logger.error(f"VLM call failed for case {case_id}: {vlm_response['error']}")
+            continue
             
-            if model_output:
-                # 评估
-                is_pred_anomaly = model_output.get('anomaly_type') != '无异常'
-                accuracy = 1 if (is_pred_anomaly == gt_data['is_anomaly']) else 0
-                
-                logic_sim = calculate_logic_similarity(model_output.get('reason', ''), gt_data['ground_truth']['reason_keywords'], case_data['context']['security_rules'])
-                
-                action_rel = calculate_action_reliability(model_output.get('recommended_action', ''), gt_data['ground_truth']['action_keywords'])
-                
-                confidence = model_output.get('confidence', 0.0)
-                
-                # 计算CRS
-                crs = calculate_crs(accuracy, logic_sim, action_rel, confidence)
-                
-                results.append({
-                    "case_id": case_id,
-                    "category": case_data['category'],
-                    "config": config_name,
-                    "accuracy": accuracy,
-                    "logic_similarity": logic_sim,
-                    "action_reliability": action_rel,
-                    "confidence": confidence,
-                    "crs": crs,
-                    "model_output": model_output
-                })
-
-    # 4. 保存结果
-    results_df = pd.DataFrame(results)
-    results_df.to_csv('results/experiment_results.csv', index=False)
+        gt_case = case["ground_truth"]
+        metrics = metrics_evaluator.evaluate_case(vlm_response, gt_case)
+        crs = crs_calculator.compute_crs(**metrics)
+        
+        scene_result = {
+            "scene_id": case_id,
+            "vlm_response": vlm_response,
+            "ground_truth": gt_case,
+            "metrics": metrics,
+            "crs": crs
+        }
+        results["scene_results"].append(scene_result)
+        logger.info(f"Case {case_id} completed - CRS: {crs:.3f}")
     
-    # 5. 可视化分析
-    plot_results(results_df)
+    return results
+
+def main():
+    setup_logging()
+    logger = logging.getLogger(__name__)
+    
+    if any(not os.getenv(var) for var in ["CE4_API_KEY", "CE4_API_BASE", "CE4_MODEL"]):
+        logger.error("Missing required environment variables. Please check your .env file.")
+        return
+    
+    Path("results").mkdir(exist_ok=True)
+    
+    logger.info("Loading dataset...")
+    context_loader = ContextLoader()
+    dataset = context_loader.load_dataset("data/dataset.json")
+    
+    vlm_caller = VLMCaller()
+    # 初始化一次，避免重复加载模型
+    metrics_evaluator = MetricsEvaluator()
+    
+    all_results = [run_experiment(config, dataset, vlm_caller, metrics_evaluator) for config in ABLATIONS]
+    
+    output_path = "results/experiment_outputs.json"
+    with open(output_path, 'w', encoding='utf-8') as f:
+        json.dump(all_results, f, ensure_ascii=False, indent=2)
+    logger.info(f"Experiment results saved to {output_path}")
+    
+    logger.info("Generating visualizations...")
+    visualizer = ExperimentVisualizer()
+    visualizer.create_radar_chart(all_results)
+    visualizer.create_heatmap(all_results)
+    visualizer.create_crs_distribution(all_results)
+    
+    logger.info("Generating case analysis report...")
+    case_analyzer = CaseAnalyzer()
+    case_analyzer.analyze_cases(all_results)
+    
+    logger.info("All experiments completed successfully!")
 
 if __name__ == "__main__":
-    run_experiment()
+    main()
