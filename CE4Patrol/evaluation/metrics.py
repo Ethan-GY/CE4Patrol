@@ -6,7 +6,7 @@ Fuses the best of both approaches:
 - Semantic similarity (Sentence-BERT) for action reliability.
 """
 import logging
-from typing import Dict, Any, List
+from typing import Dict, Any, List, Optional
 import numpy as np
 from sklearn.metrics import f1_score
 from sentence_transformers import SentenceTransformer, util
