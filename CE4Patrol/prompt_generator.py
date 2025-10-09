@@ -3,6 +3,7 @@ Prompt generator module with enhanced CoT instructions.
 """
 import logging
 from typing import Dict, Any, List
+from .data_models import PatrolCase
 
 class PromptGenerator:
     """提示生成器 (增强指令版)"""
@@ -25,15 +26,26 @@ class PromptGenerator:
         template = self._build_cot_prompt if enable_cot else self._build_direct_prompt
         return template(case_id, scene_info, context_parts, ambiguity_info, anomaly_types_enum)
 
-    def _build_spatiotemporal_context(self, context: Dict[str, Any]) -> str:
-        """构建时空上下文"""
-        st = context["spatiotemporal"]
-        return f"""
-时空上下文 (Spatiotemporal Context):
-- 时区: {st['timezone']}
-- 时间提示: {st['time_hint']}
-- GPS坐标: {st['gps']}
-"""
+    def _build_context_string(self, case: PatrolCase, config: dict) -> str:
+        """根据实验配置构建上下文注入字符串"""
+        context_parts = []
+        if config.get("S", False):
+            context_parts.append(self._build_spatiotemporal_context(case))
+        if config.get("R", False):
+            context_parts.append(self._build_rules_context(case))
+        if config.get("D", False):
+            context_parts.append(self._build_decision_context(case))
+        
+        return "\n\n".join(filter(None, context_parts))
+
+    def _build_spatiotemporal_context(self, case: PatrolCase) -> str:
+        """构建时空上下文的文本描述"""
+        st_context = case.context.spatiotemporal
+        return (
+            f"### 1. 时空背景 (S)\n"
+            f"- **巡检位置:** {st_context.location}\n"
+            f"- **巡检时间:** {st_context.timestamp}"
+        )
     
     def _build_rules_context(self, context: Dict[str, Any]) -> str:
         """构建规则上下文"""
@@ -50,16 +62,40 @@ class PromptGenerator:
 {clauses_text}
 """
     
-    def _build_decision_context(self, context: Dict[str, Any]) -> str:
-        """构建决策上下文"""
-        decision = context["decision"]
-        playbook = decision["playbook"]
+    def _build_decision_context(self, case: PatrolCase) -> str:
+        """构建决策辅助上下文的文本描述"""
+        decision_context = case.context.decision
         
-        risk_levels_text = f"""
-- 高风险动作: {', '.join(playbook['risk_levels']['high'])}
-- 中风险动作: {', '.join(playbook['risk_levels']['medium'])}
-- 低风险动作: {', '.join(playbook['risk_levels']['low'])}
-"""
+        # 构建正常状态文本参考
+        normal_refs_str = "\n".join([f"- {ref}" for ref in decision_context.normal_text_refs])
+        
+        # 构建正常状态图像参考
+        normal_images_str = "无"
+        if decision_context.normal_image_refs:
+            normal_images_str = "\n".join([f"- `{path}`" for path in decision_context.normal_image_refs])
+
+        # 构建行动预案
+        playbook_str = "\n".join([f"- **{level.upper()}风险:** {action}" for level, action in decision_context.playbook.items()])
+
+        # 构建语义模糊部分
+        ambiguity_str = ""
+        if decision_context.semantic_ambiguity:
+            ambiguity_info = decision_context.semantic_ambiguity
+            possible_options = ", ".join([f"{item['name']} (风险: {item['risk']})" for item in ambiguity_info['possible_interpretations']])
+            ambiguity_str = (
+                f"\n\n**特别注意 - 语义模糊对象:**\n"
+                f"- **对象描述:** {ambiguity_info['object_description']}\n"
+                f"- **可能解释:** {possible_options}\n"
+                f"- **分析指引:** {ambiguity_info['instruction']}"
+            )
+
+        return (
+            f"### 3. 决策辅助信息 (D)\n"
+            f"**正常状态参考:**\n{normal_refs_str}\n"
+            f"**正常状态参考图片路径:**\n{normal_images_str}\n\n"
+            f"**标准行动预案 (Playbook):**\n{playbook_str}"
+            f"{ambiguity_str}"
+        )
         
         return f"""
 决策上下文 (Decision Context):
