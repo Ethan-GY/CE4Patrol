@@ -1,88 +1,291 @@
 {
+  "dataset_name": "CE4Patrol Industrial Scenarios",
+  "version": "2.0",
   "cases": [
     {
-      "case_id": "device_room_evening",
-      "image_path": "data/images/device_room_evening.jpg",
+      "case_id": "led_red_is_normal",
+      "image_path": "data/images/led_red_is_normal.jpg",
+      "description": "挑战VLM预训练偏见：设备面板上的指示灯为红色，但操作手册规定红色为正常运行状态。",
       "context": {
-        "scene_info": {
-          "description": "设备间晚间巡检场景，包含LED指示灯、防火门、监控摄像头等设备"
-        },
+        "scene_info": { "description": "主压缩机控制面板区域" },
         "spatiotemporal": {
-          "timezone": "Asia/Shanghai",
-          "time_hint": "evening_night",
-          "gps": {"latitude": 31.2304, "longitude": 121.4737}
+          "location": "3号压缩机房",
+          "timestamp": "2024-05-21 14:30:00"
         },
         "rules": {
-          "manual_refs": ["工业安全巡检手册v2.1", "设备维护标准操作规程"],
+          "manual_refs": ["《压缩机安全操作手册v3.2》"],
           "logic_clauses": [
-            {"clause_id": "LED_COLOR_CONFLICT", "logic": "如果LED指示灯颜色与预期不符，可能存在设备故障或配置错误", "weight": 0.8},
-            {"clause_id": "FIRE_DOOR_OPEN", "logic": "防火门在非紧急情况下应保持关闭状态", "weight": 0.9},
-            {"clause_id": "CAMERA_OCCLUSION", "logic": "监控摄像头被遮挡或角度异常会影响安全监控效果", "weight": 0.7}
+            { "clause_id": "COMP-R-01", "clause": "设备运行时，状态指示灯应为红色常亮。", "weight": 0.9 },
+            { "clause_id": "COMP-R-02", "clause": "设备待机时，状态指示灯应为绿色闪烁。", "weight": 0.9 }
           ]
         },
         "decision": {
-          "normal_refs": ["正常设备运行状态"],
+          "normal_text_refs": ["正常运行时，指示灯为红色。"],
+          "normal_image_refs": ["data/images/led_green_standby_ref.jpg"],
           "playbook": {
-            "risk_levels": {
-              "high": ["立即通知安全部门", "启动应急响应程序"],
-              "medium": ["记录异常情况", "通知相关责任人", "安排后续检查"],
-              "low": ["记录观察结果"]
-            }
+            "high": "立即停机并通知区域主管",
+            "medium": "创建工单，安排工程师检查",
+            "low": "记录在巡检日志中，持续观察"
           }
+        }
+      },
+      "ground_truth": {
+        "is_anomaly": false,
+        "anomaly_type": [],
+        "reason": ["根据规则COMP-R-01，红色指示灯表示设备正在正常运行。"],
+        "used_clauses": ["COMP-R-01"],
+        "recommended_action": ["无需任何操作，一切正常。"]
+      }
+    },
+    {
+      "case_id": "fire_exit_open",
+      "image_path": "data/images/fire_exit_open.jpg",
+      "description": "基于规则的判断：消防通道门在非紧急情况下被打开。",
+      "context": {
+        "scene_info": { "description": "仓库区域的紧急消防通道" },
+        "spatiotemporal": {
+          "location": "5号仓库东南角",
+          "timestamp": "2024-05-21 10:05:00"
         },
-        "semantic_ambiguity": {
-          "small_objects": [{"name": "tiny_black_dot", "risk": "high"}]
+        "rules": {
+          "manual_refs": ["《工厂消防安全条例》"],
+          "logic_clauses": [
+            { "clause_id": "FIRE-S-01", "clause": "所有消防通道门必须保持常闭状态，除非发生火警或授权演练。", "weight": 1.0 },
+            { "clause_id": "FIRE-S-02", "clause": "消防通道前禁止堆放任何杂物。", "weight": 0.8 }
+          ]
+        },
+        "decision": {
+          "normal_text_refs": ["消防通道门应处于关闭状态。"],
+          "normal_image_refs": ["data/images/fire_exit_closed_ref.jpg"],
+          "playbook": {
+            "high": "立即通知安保部门关闭门并调查原因，检查是否有未经授权的进入。",
+            "medium": "报告给设施管理部门",
+            "low": "记录并提醒员工"
+          }
         }
       },
       "ground_truth": {
         "is_anomaly": true,
-        "anomaly_type": "设备异常",
-        "reason": "LED指示灯显示异常颜色，防火门处于开启状态，监控摄像头被部分遮挡",
-        "recommended_action": ["检查LED指示灯电路", "关闭防火门", "调整摄像头角度", "记录设备状态"],
-        "used_clauses": ["LED_COLOR_CONFLICT", "FIRE_DOOR_OPEN", "CAMERA_OCCLUSION"]
+        "anomaly_type": ["安全违规"],
+        "reason": ["违反了FIRE-S-01规则，消防通道门在非紧急情况下处于开启状态，存在严重安全隐患。"],
+        "used_clauses": ["FIRE-S-01"],
+        "recommended_action": ["立即通知安保部门关闭门并调查原因，检查是否有未经授权的进入。"]
       }
     },
     {
-      "case_id": "office_night",
-      "image_path": "data/images/office_night.jpg",
+      "case_id": "camera_occluded",
+      "image_path": "data/images/camera_occluded.jpg",
+      "description": "基于规则的判断：监控摄像头被部分遮挡。",
       "context": {
-        "scene_info": {
-          "description": "办公室夜间场景，检查灯光状态和是否有人员滞留"
-        },
+        "scene_info": { "description": "数据中心入口的监控摄像头画面" },
         "spatiotemporal": {
-          "timezone": "Asia/Shanghai",
-          "time_hint": "evening_night",
-          "gps": {"latitude": 31.2304, "longitude": 121.4737}
+          "location": "数据中心A区入口",
+          "timestamp": "2024-05-22 03:00:00"
         },
         "rules": {
-          "manual_refs": ["夜间安全管理制度"],
+          "manual_refs": ["《安保监控系统管理规定》"],
           "logic_clauses": [
-            {"clause_id": "LIGHTS_AT_NIGHT", "logic": "夜间办公区域灯光应适当关闭，但安全照明应保持", "weight": 0.6},
-            {"clause_id": "PERSON_AFTER_HOURS", "logic": "非工作时间发现人员活动需要核实身份和授权", "weight": 0.85}
+            { "clause_id": "SEC-CAM-01", "clause": "所有监控摄像头必须保持视野清晰，无任何遮挡。", "weight": 1.0 },
+            { "clause_id": "SEC-CAM-02", "clause": "任何对摄像头的遮挡行为都可能被视为潜在的破坏活动。", "weight": 0.9 }
           ]
         },
         "decision": {
-          "normal_refs": ["标准照明配置", "常规人员活动模式"],
+          "normal_text_refs": ["摄像头画面应完整清晰。"],
+          "normal_image_refs": [],
           "playbook": {
-            "risk_levels": {
-              "medium": ["核实人员身份", "检查灯光控制系统", "确认是否有加班授权", "记录异常情况"]
-            }
+            "high": "立即派遣安保人员到现场核实，并调阅相关录像排查可疑人员。",
+            "medium": "创建高优先级工单，要求技术人员立即修复。",
+            "low": "记录事件"
           }
-        },
-        "semantic_ambiguity": {}
+        }
       },
       "ground_truth": {
         "is_anomaly": true,
-        "anomaly_type": "环境异常",
-        "reason": "夜间办公区域灯光异常，检测到人员活动",
-        "recommended_action": ["核实人员身份", "检查灯光控制系统", "确认是否有加班授权", "记录异常情况"],
-        "used_clauses": ["LIGHTS_AT_NIGHT", "PERSON_AFTER_HOURS"]
+        "anomaly_type": ["安保风险", "设备故障"],
+        "reason": ["违反了SEC-CAM-01和SEC-CAM-02，摄像头被遮挡，无法正常履行监控职责，可能为人为破坏。"],
+        "used_clauses": ["SEC-CAM-01", "SEC-CAM-02"],
+        "recommended_action": ["立即派遣安保人员到现场核实，并调阅相关录像排查可疑人员。"]
+      }
+    },
+    {
+      "case_id": "person_in_server_room_night",
+      "image_path": "data/images/person_in_server_room_night.jpg",
+      "description": "时空特殊性判断：非工作时间（深夜），有人出现在核心机房。",
+      "context": {
+        "scene_info": { "description": "核心服务器机柜区域" },
+        "spatiotemporal": {
+          "location": "核心数据机房",
+          "timestamp": "2024-05-22 23:45:00"
+        },
+        "rules": {
+          "manual_refs": ["《数据中心访问控制策略》"],
+          "logic_clauses": [
+            { "clause_id": "DC-AC-01", "clause": "晚22:00至早7:00期间，除持有夜间特别通行证的运维人员外，任何人不得进入核心机房。", "weight": 1.0 }
+          ]
+        },
+        "decision": {
+          "normal_text_refs": ["非工作时间机房内应无人。"],
+          "normal_image_refs": ["data/images/server_room_empty_ref.jpg"],
+          "playbook": {
+            "high": "立即触发警报，通知安保中心验证人员身份，若无法验证则视为非法入侵。",
+            "medium": "记录事件并上报IT主管",
+            "low": "无需操作"
+          }
+        }
+      },
+      "ground_truth": {
+        "is_anomaly": true,
+        "anomaly_type": ["未授权访问"],
+        "reason": ["在规则DC-AC-01规定的受限时间内，机房出现人员，构成潜在的未授权访问事件。"],
+        "used_clauses": ["DC-AC-01"],
+        "recommended_action": ["立即触发警报，通知安保中心验证人员身份，若无法验证则视为非法入侵。"]
+      }
+    },
+    {
+      "case_id": "water_near_electrical_box",
+      "image_path": "data/images/water_near_electrical_box.jpg",
+      "description": "时空特殊性判断：一个水杯被放置在关键电气柜旁边。",
+      "context": {
+        "scene_info": { "description": "配电房内的主要电气控制柜" },
+        "spatiotemporal": {
+          "location": "主配电房",
+          "timestamp": "2024-05-23 11:20:00"
+        },
+        "rules": {
+          "manual_refs": ["《电气安全工作规程》"],
+          "logic_clauses": [
+            { "clause_id": "ELEC-S-05", "clause": "严禁在电气设备一米范围内放置任何液体容器，以防泄漏导致短路。", "weight": 1.0 }
+          ]
+        },
+        "decision": {
+          "normal_text_refs": ["电气柜周围应保持干燥，无杂物。"],
+          "normal_image_refs": [],
+          "playbook": {
+            "high": "立即通知现场人员移走水杯，并对周边进行安全检查。",
+            "medium": "对相关人员进行安全教育。",
+            "low": "记录提醒"
+          }
+        }
+      },
+      "ground_truth": {
+        "is_anomaly": true,
+        "anomaly_type": ["安全隐患"],
+        "reason": ["违反ELEC-S-05规定，液体容器靠近电气设备，存在极高的短路和触电风险。"],
+        "used_clauses": ["ELEC-S-05"],
+        "recommended_action": ["立即通知现场人员移走水杯，并对周边进行安全检查。"]
+      }
+    },
+    {
+      "case_id": "office_lights_on_night",
+      "image_path": "data/images/office_lights_on_night.jpg",
+      "description": "时空特殊性判断：深夜时分，无人的办公室灯火通明。",
+      "context": {
+        "scene_info": { "description": "研发部门办公室" },
+        "spatiotemporal": {
+          "location": "研发大楼3层",
+          "timestamp": "2024-05-23 02:15:00"
+        },
+        "rules": {
+          "manual_refs": ["《办公区域节能管理规定》"],
+          "logic_clauses": [
+            { "clause_id": "ENERGY-01", "clause": "所有员工下班后必须关闭个人工位及公共区域的照明设备。", "weight": 0.6 },
+            { "clause_id": "ENERGY-02", "clause": "若因加班需要，须向行政部门报备，否则视为能源浪费。", "weight": 0.5 }
+          ]
+        },
+        "decision": {
+          "normal_text_refs": ["非工作时间办公室应熄灯。"],
+          "normal_image_refs": [],
+          "playbook": {
+            "high": "立即通知安保确认是否有人在内或存在安全问题。",
+            "medium": "记录事件，次日通知行政部门处理。",
+            "low": "远程关闭照明（如果系统支持）或记录为能源浪费事件。"
+          }
+        }
+      },
+      "ground_truth": {
+        "is_anomaly": true,
+        "anomaly_type": ["能源浪费", "潜在安保问题"],
+        "reason": ["违反了ENERGY-01规定，在非工作时间且无人的情况下，办公室照明未关闭。"],
+        "used_clauses": ["ENERGY-01"],
+        "recommended_action": ["远程关闭照明（如果系统支持）或记录为能源浪费事件。"]
+      }
+    },
+    {
+      "case_id": "distant_black_dot",
+      "image_path": "data/images/distant_black_dot.jpg",
+      "description": "物体语义模糊性：远处地面上有一个小黑点，可能是烟头。",
+      "context": {
+        "scene_info": { "description": "室外燃料存储区，地面为混凝土" },
+        "spatiotemporal": {
+          "location": "燃料存储区C区",
+          "timestamp": "2024-05-24 15:00:00"
+        },
+        "rules": {
+          "manual_refs": ["《A级防火区管理条例》"],
+          "logic_clauses": [
+            { "clause_id": "FIRE-A-01", "clause": "A级防火区内严禁任何形式的明火、火种（包括烟头）。", "weight": 1.0 }
+          ]
+        },
+        "decision": {
+          "normal_text_refs": ["地面应无任何可燃废弃物。"],
+          "normal_image_refs": [],
+          "playbook": {
+            "high": "立即派遣人员到现场确认，如是烟头需立即熄灭并作为严重安全事件上报。",
+            "medium": "放大监控画面或切换高清摄像头进行二次确认。",
+            "low": "记录为待观察事件。"
+          },
+          "semantic_ambiguity": {
+            "object_description": "地面上的一个小黑点",
+            "possible_interpretations": [
+              { "name": "烟头", "risk": "high" },
+              { "name": "小石子或污渍", "risk": "none" }
+            ],
+            "instruction": "该物体非常小且模糊，请结合其位于'燃料存储区'这一高风险位置的上下文，进行风险评估和决策。"
+          }
+        }
+      },
+      "ground_truth": {
+        "is_anomaly": true,
+        "anomaly_type": ["高风险火灾隐患"],
+        "reason": ["尽管物体模糊，但根据其在A级防火区的位置，必须按照最高风险（烟头）进行预处理，违反FIRE-A-01。"],
+        "used_clauses": ["FIRE-A-01"],
+        "recommended_action": ["立即派遣人员到现场确认，如是烟头需立即熄灭并作为严重安全事件上报。"]
+      }
+    },
+    {
+      "case_id": "challenge_multi_anomaly",
+      "image_path": "data/images/challenge_multi_anomaly.jpg",
+      "description": "【挑战案例】一个场景中包含多种异常：消防通道门被打开，且门口有液体泄漏。",
+      "context": {
+        "scene_info": { "description": "化工厂房的紧急出口" },
+        "spatiotemporal": {
+          "location": "3号化工厂房西北出口",
+          "timestamp": "2024-05-25 09:30:00"
+        },
+        "rules": {
+          "manual_refs": ["《工厂消防安全条例》", "《化学品管理规定》"],
+          "logic_clauses": [
+            { "clause_id": "FIRE-S-01", "clause": "所有消防通道门必须保持常闭状态。", "weight": 1.0 },
+            { "clause_id": "CHEM-L-03", "clause": "任何不明液体泄漏都应立即报告，并视为潜在的危险化学品泄漏。", "weight": 1.0 }
+          ]
+        },
+        "decision": {
+          "normal_text_refs": ["消防通道门关闭，地面干燥清洁。"],
+          "normal_image_refs": ["data/images/fire_exit_closed_ref.jpg"],
+          "playbook": {
+            "high": "立即拉响泄漏和安保警报，通知应急响应团队和安保部门，并疏散附近人员。",
+            "medium": "关闭门并清理液体。",
+            "low": "记录"
+          }
+        }
+      },
+      "ground_truth": {
+        "is_anomaly": true,
+        "anomaly_type": ["安全违规", "化学品泄漏风险"],
+        "reason": ["同时违反FIRE-S-01（消防门开启）和CHEM-L-03（不明液体泄漏），构成复合型高风险事件。"],
+        "used_clauses": ["FIRE-S-01", "CHEM-L-03"],
+        "recommended_action": ["立即拉响泄漏和安保警报，通知应急响应团队和安保部门，并疏散附近人员。"]
       }
     }
-  ],
-  "metadata": {
-    "version": "1.1-fused",
-    "description": "CE4Patrol fused dataset for Schrödinger anomaly detection",
-    "anomaly_types_enum": ["设备异常", "环境异常", "人员异常", "无异常"]
-  }
+  ]
 }
