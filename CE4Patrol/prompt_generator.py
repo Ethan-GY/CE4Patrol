@@ -97,13 +97,6 @@ class PromptGenerator:
             f"{ambiguity_str}"
         )
         
-        return f"""
-决策上下文 (Decision Context):
-- 正常参考: {', '.join(decision['normal_refs'])}
-- 操作手册:
-{risk_levels_text}
-- 触发阈值: {playbook['trigger']}
-"""
     
     def _build_semantic_ambiguity(self, context: Dict[str, Any]) -> str:
         """构建语义歧义信息"""
