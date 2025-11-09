@@ -4,7 +4,7 @@
   "cases": [
     {
       "case_id": "led_red_is_normal",
-      "image_path": "data/images/led_red_is_normal.jpg",
+      "image_path": "data/images/指示灯1.png",
       "description": "挑战VLM预训练偏见：设备面板上的指示灯为红色，但操作手册规定红色为正常运行状态。",
       "context": {
         "scene_info": { "description": "主压缩机控制面板区域" },
@@ -39,7 +39,7 @@
     },
     {
       "case_id": "fire_exit_open",
-      "image_path": "data/images/fire_exit_open.jpg",
+      "image_path": "data/images/消防门1.png",
       "description": "基于规则的判断：消防通道门在非紧急情况下被打开。",
       "context": {
         "scene_info": { "description": "仓库区域的紧急消防通道" },
@@ -74,7 +74,7 @@
     },
     {
       "case_id": "camera_occluded",
-      "image_path": "data/images/camera_occluded.jpg",
+      "image_path": "data/images/玻璃碎片1.png",
       "description": "基于规则的判断：监控摄像头被部分遮挡。",
       "context": {
         "scene_info": { "description": "数据中心入口的监控摄像头画面" },
@@ -109,7 +109,7 @@
     },
     {
       "case_id": "person_in_server_room_night",
-      "image_path": "data/images/person_in_server_room_night.jpg",
+      "image_path": "data/images/夜晚闯入1.png",
       "description": "时空特殊性判断：非工作时间（深夜），有人出现在核心机房。",
       "context": {
         "scene_info": { "description": "核心服务器机柜区域" },
@@ -143,7 +143,7 @@
     },
     {
       "case_id": "water_near_electrical_box",
-      "image_path": "data/images/water_near_electrical_box.jpg",
+      "image_path": "data/images/电箱水杯1.png",
       "description": "时空特殊性判断：一个水杯被放置在关键电气柜旁边。",
       "context": {
         "scene_info": { "description": "配电房内的主要电气控制柜" },
@@ -177,7 +177,7 @@
     },
     {
       "case_id": "office_lights_on_night",
-      "image_path": "data/images/office_lights_on_night.jpg",
+      "image_path": "data/images/夜晚亮灯1.jpg",
       "description": "时空特殊性判断：深夜时分，无人的办公室灯火通明。",
       "context": {
         "scene_info": { "description": "研发部门办公室" },
@@ -212,7 +212,7 @@
     },
     {
       "case_id": "distant_black_dot",
-      "image_path": "data/images/distant_black_dot.jpg",
+      "image_path": "data/images/烟头1.png",
       "description": "物体语义模糊性：远处地面上有一个小黑点，可能是烟头。",
       "context": {
         "scene_info": { "description": "室外燃料存储区，地面为混凝土" },
@@ -254,7 +254,7 @@
     },
     {
       "case_id": "challenge_multi_anomaly",
-      "image_path": "data/images/challenge_multi_anomaly.jpg",
+      "image_path": "data/images/玻璃碎片+烟头1.png",
       "description": "【挑战案例】一个场景中包含多种异常：消防通道门被打开，且门口有液体泄漏。",
       "context": {
         "scene_info": { "description": "化工厂房的紧急出口" },
